@@ -23,6 +23,7 @@ def main(options,args):
     from roctools import ROCIntegrator, ROCBuilder
     
     fin = ROOT.TFile.Open(options.infile)
+    fout = ROOT.TFile.Open(options.outfile, "recreate")
 
     ROOT.gROOT.SetStyle("Plain")
     
@@ -53,26 +54,31 @@ def main(options,args):
         builder = ROCBuilder(hsig.GetName(),hsig.GetName(),hsig,hbkg)
         eff = ROCIntegrator(hsig.GetName(),builder.getRoc()).getGraph(options.fro,options.to)
         effs.append(eff)
-        
+    
+    count = 0    
     for eff in effs:
-        eff.SetTitle(';n_{vtx}-1;#varepsilon')
+	title = 'Efficiency vs. nVtx %d, ggh;n_{vtx}-1;#varepsilon' % count
+        eff.SetTitle(title) 
         eff.SetLineColor(colors[0])
         eff.SetMarkerColor(colors[0])
         eff.SetMarkerStyle(markers[0])
         colors.pop(0), markers.pop(0)
-        
+    	count = count + 1
+
+    print count
     canv = ROOT.TCanvas("rocs","rocs",500,500)
     canv.SetGridx()
     canv.SetGridy()
     canv.cd()
     effs[0].Draw("CAP")
+    #effs[0].Write()
     for eff in effs[1:]:
-        effs[0].Draw("CP")
-        
+        eff.Draw("CP")
+	#eff.Write()
     objs.extend(effs)
     objs.append(canv)
-    
-    
+    #canv.SaveAs(options.outfile)
+    fout.Write();  
 
 if __name__ == "__main__":
     parser = OptionParser(option_list=[

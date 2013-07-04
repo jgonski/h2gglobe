@@ -124,7 +124,7 @@ def main(o,args):
                         }
     if "FisherD" in o.methods:
         mname =  "FisherD%s" % o.label
-        fcats = factory.BookMethod( TMVA.Types.kCategory, mname )
+        fcats = factory.BookMethod( TMVA.Types.kCategory, mname, "" )
         
         for cut,name,vars in categories:        
             print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
@@ -135,7 +135,7 @@ def main(o,args):
 
     if "Fisher" in o.methods:
         mname =  "Fisher%s" % o.label
-        fcats = factory.BookMethod( TMVA.Types.kCategory, mname )
+        fcats = factory.BookMethod( TMVA.Types.kCategory, mname, "" )
         
         for cut,name,vars in categories:        
             print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
@@ -146,7 +146,7 @@ def main(o,args):
 
     if "Likelihood" in o.methods:
         mname =  "Likelihood%s" % o.label
-        fcats = factory.BookMethod( TMVA.Types.kCategory, mname )
+        fcats = factory.BookMethod( TMVA.Types.kCategory, mname, "" )
         
         for cut,name,vars in categories:        
             print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
@@ -157,7 +157,7 @@ def main(o,args):
 
     if "LikelihoodD" in o.methods:
         mname =  "LikelihoodD%s" % o.label
-        fcats = factory.BookMethod( TMVA.Types.kCategory, mname )
+        fcats = factory.BookMethod( TMVA.Types.kCategory, mname, "" )
         
         for cut,name,vars in categories:        
             print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
@@ -167,19 +167,20 @@ def main(o,args):
                             )
 
     if "BDT" in o.methods:
-        mname =  "BDT%s" % o.label
+        mname =  str("BDT%s" % o.label)
         settings = defaultSettings["BDT"]
         if hasattr(o,"settings") and "BDT" in o.settings:
             settings = str(o.settings["BDT"])
         if len(categories) == 0:
-            cats = factory.BookMethod(TMVA.Types.kBDT,mname,settings)
+            cats = factory.BookMethod(TMVA.Types.kBDT, mname, settings)
         else:
-            cats = factory.BookMethod( TMVA.Types.kCategory, mname)
-            
+            cats = factory.BookMethod( TMVA.Types.kCategory, mname, "")
+            print categories 
             for cut,name,vars in categories:
                 print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
                 cats.AddMethod(cut,
                                vars,TMVA.Types.kBDT,"%s_%s" % (mname,name),settings)
+		#cats.AddMethod(cut,vars,TMVA.Types.kBDT,"testThis",settings)
 
     if "Cuts" in o.methods:
         mname =  "Cuts%s" % o.label
@@ -189,7 +190,7 @@ def main(o,args):
         if len(categories) == 0:
             cats = factory.BookMethod(TMVA.Types.kCuts,mname,settings)
         else:
-            cats = factory.BookMethod( TMVA.Types.kCategory, mname)
+            cats = factory.BookMethod( TMVA.Types.kCategory, mname, "")
             
             for cut,name,vars in categories:
                 print "booking sub-category classifier : %s %s %s" % ( cut, name, vars )
@@ -221,11 +222,6 @@ if __name__ == "__main__":
                         default="vtxOptReduction.root",
                         help="pattern of files to be read", metavar="PATTERN"
                         ), 
-            make_option("-t", "--treeName",
-                        action="store", type="string", dest="treename",
-                        default="vtxOptTree",
-                        help="TTree name", metavar="TREENAME"
-                        ),
             make_option("-o", "--outfile",
                         action="store", type="string", dest="outfile",
                         default="tmva%(label)s.root",

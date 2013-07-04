@@ -17,19 +17,19 @@
   "classes" : { 
 	  "Signal" : { 
 		"samples" : [
-                   ["vtxOpt/ggh_m125_8TeV",1,"isClosestToGen && Entry$ % 2 == 0",0],
-	           ["vtxOpt/ggh_m125_8TeV",1,"isClosestToGen && Entry$ % 2 == 1",1],
-                   ["vtxOpt/vbf_m125_8TeV",1,"isClosestToGen && Entry$ % 2 == 0",0],
-	           ["vtxOpt/vbf_m125_8TeV",1,"isClosestToGen && Entry$ % 2 == 1",1]
+                   ["TestTree",1,"!isClosestToGen && Entry$ % 2 == 0",0],
+	           ["TestTree",1,"!isClosestToGen && Entry$ % 2 == 1",1],
+                   ["TestTree",1,"!isClosestToGen && Entry$ % 2 == 0",0],
+	           ["TestTree",1,"!isClosestToGen && Entry$ % 2 == 1",1]
 	        ],
 		"weight" : "evWeight"
 		},
 	  "Background" : { 
 		"samples" : [
-                   ["vtxOpt/ggh_m125_8TeV",1,"!isClosestToGen && Entry$ % 2 == 0",0],
-	           ["vtxOpt/ggh_m125_8TeV",1,"!isClosestToGen && Entry$ % 2 == 1",1],
-                   ["vtxOpt/vbf_m125_8TeV",1,"!isClosestToGen && Entry$ % 2 == 0",0],
-	           ["vtxOpt/vbf_m125_8TeV",1,"!isClosestToGen && Entry$ % 2 == 1",1]
+                   ["TestTree",1,"isClosestToGen && Entry$ % 2 == 0",0],
+	           ["TestTree",1,"isClosestToGen && Entry$ % 2 == 1",1],
+                   ["TestTree",1,"isClosestToGen && Entry$ % 2 == 0",0],
+	           ["TestTree",1,"isClosestToGen && Entry$ % 2 == 1",1]
 	        ],
 		"weight" : "evWeight"
 		}

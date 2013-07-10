@@ -119,9 +119,13 @@ def extract_par_limits(pars, model_name, mass, cl=0.05):
     
     return par_limits
 
-def system(cmd):
+def system(cmd, stopOnFailure = True):
     print cmd
-    os.system(cmd)
+    res = os.system(cmd)
+
+    if res != 0 and stopOnFailure:
+        print >> sys.stderr,"failed to run command '%s', exiting" % cmd
+        sys.exit(res)
     
 def main(options, args):
 
@@ -154,6 +158,7 @@ def main(options, args):
                     "cVcF"   : ["CV","CF"],
                     "rVrF"   : ["RV","RF"],
                     "rV"     : ["RV"],
+                    "rVprf"  : ["RV"],
                     "mH"     : ["MH"],
                     "mumH"     : ["r","MH"],
                     }
@@ -178,8 +183,17 @@ def main(options, args):
     ## generate the model
     mass = "%1.5g" % options.mH
     model_name = "%s%1.5g" % ( options.model, options.mH )
+    if options.label != "":
+        model_name += "_%s" % options.label
+    if options.statOnly:
+        model_name += "_stat"
     model = "%s.root" % model_name
     if not os.path.isfile(model) or options.forceRedoWorkspace:
+
+        if not os.path.exists(options.datacard):
+            print >> sys.stderr,"datacard '%s' does not exist, exiting" % options.datacard
+            sys.exit(1)
+
         system("text2workspace.py %s %s -o %s -m %1.5g %s" % ( txt2ws_args, options.datacard, model, options.mH, model_args[options.model] ) )
 
     ## best fit
@@ -276,6 +290,11 @@ if __name__ == "__main__":
         make_option("-M", "--model",
                     action="store", type="string", dest="model",
                     default="ggHqqH",
+                    help="default : [%default]", metavar=""
+                    ),
+        make_option("--label",
+                    action="store", type="string", dest="label",
+                    default="",
                     help="default : [%default]", metavar=""
                     ),
         make_option("-s", "--singleOnly",

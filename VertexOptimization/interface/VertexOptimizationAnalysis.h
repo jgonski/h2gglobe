@@ -41,6 +41,8 @@ class VertexOptimizationAnalysis : public StatAnalysis
     
     TString minBiasRefName;
     int storeNVert;
+    float timeResVal;
+
 
 private:
     std::vector<std::string> vtxVarNames_;
@@ -64,7 +66,9 @@ private:
     vector<float> dZ_;
     vector<float> diphoM_;
     vector<float> diphoPt_;
-    
+
+    Float_t timeResVal_;
+    Float_t tofCorrTdiff_;    
 };
 
 #endif

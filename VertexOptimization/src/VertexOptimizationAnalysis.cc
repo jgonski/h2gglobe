@@ -16,6 +16,7 @@ VertexOptimizationAnalysis::VertexOptimizationAnalysis()
 
     minBiasRefName = "aux/minBiasRef.root";
     storeNVert = 10;
+    timeResVal = 0.01;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -278,7 +279,17 @@ bool VertexOptimizationAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float we
 	    } else {
 		ksprob_ = 0.;
 	    }
-	    
+    
+        //taken directly from PhotonAnalysis/src/MicroAnalysis.cc
+        /*TVector3 caloPosLead    = ( * (TVector3*) l.pho_calopos->At(  l.dipho_leadind[diphoton_id] ) ) ;
+        TVector3 caloPosSubLead = ( * (TVector3*) l.pho_calopos->At(  l.dipho_subleadind[diphoton_id] ) ) ;
+        TVector3 currentVertex  = ( * (TVector3*)l.vtx_std_xyz->At(vi) );
+        TVector3 closestVertex  = ( * (TVector3*)l.vtx_std_xyz->At(closest_idx) );
+        tofCorrTdiff_           = getDeltaTof(caloPosLead, caloPosSubLead, closestVertex); // "true" time difference, given SC and true_vtx positions
+        tofCorrTdiff_          -= getDeltaTof(caloPosLead, caloPosSubLead, currentVertex); //  tof correction: for current vtx;
+    
+        tofCorrTdiff_          += timeOptimismFactor * getTimeResol(absDeltaEta_, l.pho_isEB[l.dipho_leadind[diphoton_id]] , l.pho_isEB[l.dipho_subleadind[diphoton_id]] );
+	    */
 	    l.FillTreeContainer("vtxOpt");
 	}
 

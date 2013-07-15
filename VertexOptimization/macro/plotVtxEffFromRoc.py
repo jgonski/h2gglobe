@@ -27,6 +27,7 @@ def main(options,args):
 
     ROOT.gROOT.SetStyle("Plain")
     
+    rocs = []
     effs = []
     colors = [ROOT.kBlue, ROOT.kMagenta, ROOT.kRed, ROOT.kGreen]
     markers = [ROOT.kOpenCircle, ROOT.kFullTriangleUp, ROOT.kOpenDiamond, ROOT.kFullCircle]
@@ -54,7 +55,9 @@ def main(options,args):
         builder = ROCBuilder(hsig.GetName(),hsig.GetName(),hsig,hbkg)
         eff = ROCIntegrator(hsig.GetName(),builder.getRoc()).getGraph(options.fro,options.to)
         effs.append(eff)
-    
+   	builder.getRoc().Print('all')
+ 	rocs.append(builder.getRoc())
+
     count = 0    
     for eff in effs:
 	title = 'Efficiency vs. nVtx %d, ggh;n_{vtx}-1;#varepsilon' % count
@@ -65,20 +68,23 @@ def main(options,args):
         colors.pop(0), markers.pop(0)
     	count = count + 1
 
+    fout.cd()
     print count
     canv = ROOT.TCanvas("rocs","rocs",500,500)
     canv.SetGridx()
     canv.SetGridy()
     canv.cd()
     effs[0].Draw("CAP")
-    #effs[0].Write()
+    effs[0].Write()
+    for roc in rocs:
+	roc.Write()
     for eff in effs[1:]:
         eff.Draw("CP")
-	#eff.Write()
+	eff.Write()
     objs.extend(effs)
     objs.append(canv)
-    #canv.SaveAs(options.outfile)
-    fout.Write();  
+    canv.SaveAs("canv_%s" % options.outfile)
+    fout.Close();  
 
 if __name__ == "__main__":
     parser = OptionParser(option_list=[

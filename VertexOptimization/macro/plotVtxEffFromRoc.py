@@ -44,13 +44,17 @@ def main(options,args):
         effs.append(eff)
         
     for histo in options.histopairs:
+        tf = fin
         if type(histo) == str:
+            if ":" in histo:
+                fname, histo = histo.split(":")
+                tf = TFile.Open(fname)
             sig,bkg = histo.split(",")
         else:
             sig,bkg = histo
 
-        hsig = fin.Get(sig)
-        hbkg = fin.Get(bkg)
+        hsig = tf.Get(sig)
+        hbkg = tf.Get(bkg)
 
         builder = ROCBuilder(hsig.GetName(),hsig.GetName(),hsig,hbkg)
         eff = ROCIntegrator(hsig.GetName(),builder.getRoc()).getGraph(options.fro,options.to)
@@ -58,6 +62,23 @@ def main(options,args):
    	builder.getRoc().Print('all')
  	rocs.append(builder.getRoc())
 
+    for rocname in options.rocs:
+        tf = fin
+        print rocname
+        if ":" in rocname:
+            fname, rocname = rocname.split(":")
+            tf = ROOT.TFile.Open(fname)
+        if "," in rocname:
+            rocname,roclabel = rocname.split(',')
+        else:
+            roclabel = None
+        roc = tf.Get(rocname)
+        if roclabel:
+            roc.SetTitle(roclabel)
+        eff = ROCIntegrator(roc.GetName(),roc).getGraph(options.fro,options.to)
+        effs.append(eff)
+ 	rocs.append(roc)
+        
     count = 0    
     for eff in effs:
 	title = 'Efficiency vs. nVtx %d, ggh;n_{vtx}-1;#varepsilon' % count
@@ -104,13 +125,17 @@ if __name__ == "__main__":
                         ),
             make_option("-p", "--histopair", action="append",
                         default=[], dest="histopairs",
-                        help="plot ROC from signal and backgroud pdf"
+                        help="plot ROC from signal and backgroud pdf (format: [rootfile:]<signal>,<background>)"
                         ),
-            make_option("-f","--from", action="store", default=1,
+            make_option("-r", "--roc", action="append", type="string",
+                        default=[], dest="rocs",
+                        help="get specified ROC (format: [rootfile:]<roc>,[label])"
+                        ),
+            make_option("-f","--from", action="store", default=1, type="int",
                         dest="fro",
                         help="plot range lower boundary"
                         ),
-            make_option("-t","--to", action="store", default=50,
+            make_option("-t","--to", action="store", default=50, type="int",
                         dest="to",
                         help="plot range upper boundary"
                         ),
@@ -128,6 +153,8 @@ if __name__ == "__main__":
     (options, args) = parser.parse_args()
     loadSettings(options.load, options)
 
+    print options.rocs
+    
     import ROOT
 
     main(options, args)

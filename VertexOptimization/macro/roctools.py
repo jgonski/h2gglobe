@@ -66,7 +66,7 @@ class ROCIntegrator:
         gr.SetName( "eff_%s" %self.name )
         for i in range(begin,end):
             roc = self.getRoc(i)
-            gr.SetPoint( gr.GetN(), i, roc.Integral() )
+            gr.SetPoint( gr.GetN(), i, roc.Integral("width") )
             
         return gr
         

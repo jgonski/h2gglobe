@@ -16,6 +16,10 @@
 #include <fstream>
 #include "math.h"
 
+#define PI 3.141592654
+#define speedOfLight 299792458.
+
+
 // ------------------------------------------------------------------------------------
 class VertexOptimizationAnalysis : public StatAnalysis 
 {
@@ -41,7 +45,6 @@ class VertexOptimizationAnalysis : public StatAnalysis
     
     TString minBiasRefName;
     int storeNVert;
-    float timeResVal;
 
 
 private:
@@ -66,7 +69,12 @@ private:
     vector<float> dZ_;
     vector<float> diphoM_;
     vector<float> diphoPt_;
+    
+    float getTimeResol(float timeResVal);
+    float getDeltaTof(TVector3 &posLead, TVector3 &posSubLead, TVector3 &posVertex);
+    float getExtraTravelTime(TVector3 &posSC, TVector3 &posVertex);
 
+    Float_t deltaTof;
     Float_t timeResVal_;
     Float_t tofCorrTdiff_;    
 };

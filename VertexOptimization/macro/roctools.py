@@ -1,5 +1,6 @@
 from ROOT import TGraph, TH1F, TSpline3 
 
+
 class ROCBuilder:
     
     def __init__(self,name,title,sig,bkg):
@@ -66,7 +67,6 @@ class ROCIntegrator:
         gr.SetName( "eff_%s" %self.name )
         for i in range(begin,end):
             roc = self.getRoc(i)
-            gr.SetPoint( gr.GetN(), i, roc.Integral() )
+            gr.SetPoint( gr.GetN(), i, roc.Integral("width") )
             
         return gr
-        

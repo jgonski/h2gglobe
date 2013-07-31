@@ -191,13 +191,14 @@ float VertexOptimizationAnalysis::getExtraTravelTime(TVector3 &posSC, TVector3 &
   float travelled = sqrt( pow(posSC.X()-posVertex.X(), 2) + 
               pow(posSC.Y()-posVertex.Y(), 2) + 
               pow(posSC.Z()-posVertex.Z(), 2)  );
-  float nominal   = sqrt( pow(posSC.X(), 2) + 
-              pow(posSC.Y(), 2) + 
-              pow(posSC.Z(), 2)  );
+  //float nominal   = sqrt( pow(posSC.X(), 2) + 
+              //pow(posSC.Y(), 2) + 
+              //pow(posSC.Z(), 2)  );
   
   //std::cout << "posSC.X(): " << posSC.X() << " posVertex.X(): " << posVertex.X() << " posSC.Z(): " << posSC.Z() << " posVertex.Z(): " << posVertex.Z() << " travelled: " << travelled << " nominal: " << nominal << " \t return: " << ((travelled-nominal)/100./speedOfLight*1e9 ) << std::endl; // DEBUG
   
-  return (travelled-nominal)/100./speedOfLight*1.e9;
+    return (travelled)/100./speedOfLight*1.e9;
+  //return (travelled-nominal)/100./speedOfLight*1.e9;
 }
 
 // ----------------------------------------------------------------------------------------------------

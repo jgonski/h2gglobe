@@ -4,6 +4,8 @@
 #include "PhotonReducedInfo.h"
 #include <iostream>
 #include <algorithm>
+#include "TRandom3.h"
+#include "TMath.h"
 
 #define PADEBUG 0 
 
@@ -16,7 +18,8 @@ VertexOptimizationAnalysis::VertexOptimizationAnalysis()
 
     minBiasRefName = "aux/minBiasRef.root";
     storeNVert = 10;
-    timeResVal = 0.01;
+    timeResVal_ = 0.01;
+    deltaTof = 0;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -60,7 +63,9 @@ void VertexOptimizationAnalysis::Init(LoopAll& l)
     l.BookExternalTreeBranch("pho2",&pho2_,32000,0, "vtxOpt");
     l.BookExternalTreeBranch("dipho",&dipho_,32000,0, "vtxOpt");
     l.BookExternalTreeBranch("itype",&itype_, "vtxOpt");
-    
+    l.BookExternalTreeBranch("tofCorrTdiff",&tofCorrTdiff_,"vtxOpt");   
+    l.BookExternalTreeBranch("timeResVal_",&timeResVal_,"vtxOpt");   
+ 
     vtxVarNames_.push_back("ptvtx"), vtxVarNames_.push_back("ptasym"), vtxVarNames_.push_back("ptratio"), 
 	vtxVarNames_.push_back("ptbal"), vtxVarNames_.push_back("logsumpt2"), vtxVarNames_.push_back("ptmax3"), 
 	vtxVarNames_.push_back("ptmax"), vtxVarNames_.push_back("nchthr"), vtxVarNames_.push_back("sumtwd"),
@@ -166,6 +171,37 @@ void VertexOptimizationAnalysis::ReducedOutputTree(LoopAll &l, TTree * outputTre
 }
 
 // ----------------------------------------------------------------------------------------------------
+// added by jgonski, 15/7/2013
+
+
+float VertexOptimizationAnalysis::getTimeResol(float timeResVal_){
+    Double_t sigma; 
+    sigma = gRandom->Gaus(0,sqrt(2.)*timeResVal_); 
+    return sigma;
+}
+
+float VertexOptimizationAnalysis::getDeltaTof(TVector3 &posLead, TVector3 &posSubLead, TVector3 &posVertex){
+
+  //std::cout << "\n getExtraTravelTime(posLead,posVertex): " << ( getExtraTravelTime(posLead,posVertex) - getExtraTravelTime(posSubLead,posVertex) ) << std::endl; 
+  return getExtraTravelTime(posLead,posVertex) - getExtraTravelTime(posSubLead,posVertex);
+}
+
+
+float VertexOptimizationAnalysis::getExtraTravelTime(TVector3 &posSC, TVector3 &posVertex){
+  float travelled = sqrt( pow(posSC.X()-posVertex.X(), 2) + 
+              pow(posSC.Y()-posVertex.Y(), 2) + 
+              pow(posSC.Z()-posVertex.Z(), 2)  );
+  //float nominal   = sqrt( pow(posSC.X(), 2) + 
+              //pow(posSC.Y(), 2) + 
+              //pow(posSC.Z(), 2)  );
+  
+  //std::cout << "posSC.X(): " << posSC.X() << " posVertex.X(): " << posVertex.X() << " posSC.Z(): " << posSC.Z() << " posVertex.Z(): " << posVertex.Z() << " travelled: " << travelled << " nominal: " << nominal << " \t return: " << ((travelled-nominal)/100./speedOfLight*1e9 ) << std::endl; // DEBUG
+  
+    return (travelled)/100./speedOfLight*1.e9;
+  //return (travelled-nominal)/100./speedOfLight*1.e9;
+}
+
+// ----------------------------------------------------------------------------------------------------
 bool VertexOptimizationAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float weight, TLorentzVector & gP4, 
 					      float & mass, float & evweight, int & category, int & diphoton_id,
 					      bool & isCorrectVertex, float &kinematic_bdtout,
@@ -250,7 +286,14 @@ bool VertexOptimizationAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float we
 	pho1_ = &lead_p4;
 	pho2_ = &sublead_p4;
 	dipho_ = &Higgs;
-	
+
+    TVector3 caloPosLead    = ( * (TVector3*) l.pho_calopos->At(  l.dipho_leadind[diphoton_id] ) ) ;
+    TVector3 caloPosSubLead = ( * (TVector3*) l.pho_calopos->At(  l.dipho_subleadind[diphoton_id] ) ) ;
+    TVector3 closestVertex  = ( * (TVector3*)l.vtx_std_xyz->At(closest_id) );
+
+    deltaTof = getDeltaTof(caloPosLead, caloPosSubLead, closestVertex);
+    deltaTof += getTimeResol(timeResVal_);
+    	
 	for(int vi=0; vi<l.vtx_std_n; ++vi) {
 	    TH1 * h = ( hMinBiasRef_!=0 ? (TH1*)hMinBiasRef_->Clone("h") : 0);
 	    if( h ) { h->Reset("ICE"); }
@@ -281,15 +324,14 @@ bool VertexOptimizationAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float we
 	    }
     
         //taken directly from PhotonAnalysis/src/MicroAnalysis.cc
-        /*TVector3 caloPosLead    = ( * (TVector3*) l.pho_calopos->At(  l.dipho_leadind[diphoton_id] ) ) ;
-        TVector3 caloPosSubLead = ( * (TVector3*) l.pho_calopos->At(  l.dipho_subleadind[diphoton_id] ) ) ;
+        //computing deltaTof for closestVertex + smearing factor outside of loop    
+        //tofCorrTdiff_           = getDeltaTof(caloPosLead, caloPosSubLead, closestVertex); // "true" time difference, given SC and true_vtx positions
         TVector3 currentVertex  = ( * (TVector3*)l.vtx_std_xyz->At(vi) );
-        TVector3 closestVertex  = ( * (TVector3*)l.vtx_std_xyz->At(closest_idx) );
-        tofCorrTdiff_           = getDeltaTof(caloPosLead, caloPosSubLead, closestVertex); // "true" time difference, given SC and true_vtx positions
-        tofCorrTdiff_          -= getDeltaTof(caloPosLead, caloPosSubLead, currentVertex); //  tof correction: for current vtx;
+        tofCorrTdiff_           = deltaTof -  getDeltaTof(caloPosLead, caloPosSubLead, currentVertex); //  tof correction: for current vtx;
     
-        tofCorrTdiff_          += timeOptimismFactor * getTimeResol(absDeltaEta_, l.pho_isEB[l.dipho_leadind[diphoton_id]] , l.pho_isEB[l.dipho_subleadind[diphoton_id]] );
-	    */
+        //tofCorrTdiff_          += timeOptimismFactor * getTimeResol(absDeltaEta_, l.pho_isEB[l.dipho_leadind[diphoton_id]] , l.pho_isEB[l.dipho_subleadind[diphoton_id]] );
+        //tofCorrTdiff_           += getTimeResol(timeResVal_);  	    
+
 	    l.FillTreeContainer("vtxOpt");
 	}
 

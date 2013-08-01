@@ -136,6 +136,7 @@ if __name__  == "__main__":
 	knownDomain = domain in knownDomains
 	if domain == "cern.ch":
 		atCern = True
+	mkdir="mkdir"
 	cp="cp -pv"
 	prependToStore=""
 	if not options.runIC:
@@ -152,7 +153,6 @@ if __name__  == "__main__":
 			cfg.histdir=scriptdir
 		else:
 			cfg.histdir=os.path.join(os.getcwd(),scriptdir)
-			
 
 	outnam=os.path.join(scriptdir, "filestocombine_%s" % os.path.basename(options.inputDat))
 	g = open(outnam,"w+") 
@@ -168,7 +168,10 @@ if __name__  == "__main__":
 	  filestocmb = ""
 	  for i in xrange(len(files)):
 	        if knownDomain:
-			fil = "%s/%s_%d.%s" % ( prependToStore, os.path.join(cfg.histdir,cfg.histfile[0]), i, cfg.histfile[1] )
+			if prependToStore != "":
+				fil = "%s/%s_%d.%s" % ( prependToStore, os.path.join(cfg.histdir,cfg.histfile[0]), i, cfg.histfile[1] )
+			else:
+				fil = "%s_%d.%s" % ( os.path.join(cfg.histdir,cfg.histfile[0]), i, cfg.histfile[1] )
 		else:
 			fil = commands.getoutput("cmsPfn %s_%d.%s" % ( os.path.join(cfg.histdir,cfg.histfile[0]), i, cfg.histfile[1] ))
 		filestocmb += "typ=99999 Fil=%s\n" % fil
